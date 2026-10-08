@@ -436,18 +436,6 @@ def get_asset_name(asset_name, properties, lod=False):
 
     return asset_name
 
-def get_socket_name(asset_name):
-    """
-    Takes a given asset name and removes the prefix SOCKET_ and other non-alpha numeric characters
-    that unreal won't except, and allows the same socket name on multiple objects to export correctly.
-
-    :param str asset_name: The original name of the socket asset to export.
-    :return str: The formatted name of the socket asset to export.
-    """
-    socket_name = re.sub(rf"{RegexPresets.INVALID_SOCKET_CHARACTERS}|\.\d+$|{PreFixToken.SOCKET.value}_", "", asset_name)
-
-    return socket_name
-
 
 def get_parent_collection(scene_object, collection):
     """
@@ -1202,14 +1190,12 @@ def report_path_error_message(layout, send2ue_property, report_text):
 
 def select_all_children(scene_object, object_type, exclude_postfix_tokens=False):
     """
-    Selects all of an objects children that are in the Export collection hierarchy.
+    Selects all of an objects children.
 
     :param object scene_object: A object.
     :param str object_type: The type of object to select.
     :param bool exclude_postfix_tokens: Whether or not to exclude objects that have a postfix token.
     """
-    export_collection = bpy.data.collections.get(ToolInfo.EXPORT_COLLECTION.value)
-    export_objects = set(export_collection.all_objects) if export_collection else set()
     children = scene_object.children or get_meshes_using_armature_modifier(scene_object)
     for child_object in children:
         if child_object.type == object_type:
@@ -1217,11 +1203,7 @@ def select_all_children(scene_object, object_type, exclude_postfix_tokens=False)
                 if any(child_object.name.startswith(f'{token.value}_') for token in PreFixToken):
                     continue
 
-            if child_object not in export_objects:
-                continue
-
-            if child_object.name in bpy.context.view_layer.objects:
-                child_object.select_set(True)
+            child_object.select_set(True)
             if child_object.children:
                 select_all_children(child_object, object_type, exclude_postfix_tokens)
 

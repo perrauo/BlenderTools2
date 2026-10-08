@@ -153,10 +153,10 @@ class RPCFactory:
         import_code = self._get_callstack_references(code, function)
         code.insert(1, import_code)
 
-        # remove the doc string
-        if doc_string:
-            code = '\n'.join(code).replace(doc_string, '')
-            code = [line for line in code.split('\n') if not all([char == '"' or char == "'" for char in line.strip()])]
+        # remove the doc string using regex to handle indentation mismatches
+        code_str = '\n'.join(code)
+        code_str = re.sub(r'''(\s*)(\'\'\'|\"\"\")[\s\S]*?\2''', '', code_str)
+        code = [line for line in code_str.split('\n') if line.strip() != '']
 
         return code
 
